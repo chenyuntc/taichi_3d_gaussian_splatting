@@ -924,6 +924,7 @@ class GaussianPointCloudRasterisation(torch.nn.Module):
                 
                 # Step 5: render
                 if point_in_camera_sort_key.shape[0] > 0:
+                    import ipdb;ipdb.set_trace()
                     gaussian_point_rasterisation(
                         camera_height=camera_info.camera_height,
                         camera_width=camera_info.camera_width,
@@ -1066,9 +1067,10 @@ class GaussianPointCloudRasterisation(torch.nn.Module):
                     
 
                     if backward_valid_point_hook is not None:
+                        point_id_in_camera_list=point_id_in_camera_list.contiguous().long()
                         backward_valid_point_hook_input = GaussianPointCloudRasterisation.BackwardValidPointHookInput(
                             point_id_in_camera_list=point_id_in_camera_list,
-                            grad_point_in_camera=grad_pointcloud[point_id_in_camera_list],
+                            grad_point_in_camera=grad_pointcloud[point_id_in_camera_list.long()],
                             grad_pointfeatures_in_camera=grad_pointcloud_features[
                                 point_id_in_camera_list],
                             grad_viewspace=grad_viewspace[point_id_in_camera_list],

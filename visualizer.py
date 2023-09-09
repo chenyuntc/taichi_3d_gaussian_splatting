@@ -24,14 +24,29 @@ class GaussianPointVisualizer:
     @dataclass
     class GaussianPointVisualizerConfig:
         device: str = "cuda"
-        image_height: int = 546
-        image_width: int = 980
+        image_height: int = 546*2
+        image_width: int = 980*2
         camera_intrinsics: torch.Tensor = torch.tensor(
-            [[581.743, 0.0, 490.0], [0.0, 581.743, 273.0], [0.0, 0.0, 1.0]],
+            [[581.743*2, 0.0, 490.0*2], [0.0, 581.743*2, 273.0*2], [0.0, 0.0, 1.0]],
             device="cuda")
         initial_T_pointcloud_camera: torch.Tensor = torch.tensor(
             [[0.9992602094, -0.0041446825, 0.0382342376, 0.8111615373], [0.0047891027, 0.9998477637, -0.0167783848,
                                                                          0.4972433596], [-0.0381588759, 0.0169490798, 0.999127935, -3.8378280443], [0.0, 0.0, 0.0, 1.0]],
+            device="cuda")
+        initial_T_pointcloud_camera: torch.Tensor = torch.tensor(
+                [[0.5360772205064368,                                                                                                                                                                                                           
+   0.0059932962822117795,                                                                                                                                                                                                               
+   0.844147648005748,                                                                                                                                                                                                                   
+   68.51168147442198],                                                                                                                                                                                                                  
+  [-0.8441548280318519,                                                                                                                                                                                                                 
+   -0.001976300455052704,                                                                                                                                                                                                               
+   0.5360958170067854,                                                                                                                                                                                                                  
+   3.992869715942944],                                                                                                                                                                                                                  
+  [0.00488127076121937,                                                                                                                                                                                                                 
+   -0.9999800950875862,                                                                                                                                                                                                                 
+   0.003999826717026254,                                                                                                                                                                                                                
+   2.743609095886386],                                                                                                                                                                                                                  
+  [0.0, 0.0, 0.0, 1.0]],
             device="cuda")
         parquet_path_list: List[str] = None
         step_size: float = 0.1

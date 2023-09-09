@@ -1,4 +1,6 @@
+from functools import lru_cache
 import numpy as np
+from numpy.distutils.core import sdist
 import pandas as pd
 import PIL.Image
 import torch
@@ -10,6 +12,40 @@ from typing import Any
 from .utils import se3_to_quaternion_and_translation_torch
 
 
+
+import os
+def create_df():
+    import glob
+    files  =    glob.glob('/d/data/mlt/1684004313565050009/SENSOR_TYPE_OMNIVISION_OX08B40_*/image/*.jpg')
+    files = sorted(files)
+    # files=[_ for _ in files if '00412'<os.path.basename(_)<'00912']
+    files=[_ for _ in files if '05112'<os.path.basename(_)<'05552']
+    files=[_ for _ in files if 'SENSOR_TYPE_OMNIVISION_OX08B40_0' not in _ and
+           'SENSOR_TYPE_OMNIVISION_OX08B40_7' not in _]
+    @lru_cache(maxsize=1000)
+    def _load_yaml(path):
+        import yaml
+        with open(path, 'r') as f:
+            return yaml.safe_load(f)
+    c2ws  = [_load_yaml(_.replace('/image/','/camera/').replace('.jpg','.yaml'))['c2w'] for _ in files]
+    intrinsics = [_load_yaml(_.replace('/image/','/camera/').replace('.jpg','.yaml'))['intrin'] for _ in files]
+    camera_id = [idx for idx,_ in enumerate(files)]
+    camera_width = [1920*2]*len(files)
+    camera_height = [1080*2]*len(files)
+    # create a dataframe 
+    data = pd.DataFrame({'image_path':files,'T_pointcloud_camera':c2ws,'camera_intrinsics':intrinsics,'camera_height':camera_height,'camera_width':camera_width,'camera_id':camera_id})
+    return data
+
+def create_point_cloud():
+    import numpy as np
+    pts1=np.load('/d/data/mlt/1684004313565050009/SENSOR_TYPE_HESAI_PANDAR128_E3X_0/data/00813.pkl',allow_pickle=True)
+    pts2=np.load('/d/data/mlt/1684004313565050009/SENSOR_TYPE_HESAI_PANDAR128_E3X_1/data/00813.pkl',allow_pickle=True)
+    pts = np.concatenate([pts1,pts2],axis=0)
+    # create a dataframe, with x, y,z and r,g,b being zeros
+    data = pd.DataFrame({'x':pts[:,0],'y':pts[:,1],'z':pts[:,2],'r':np.zeros_like(pts[:,0]),'g':np.zeros_like(pts[:,0]),'b':np.zeros_like(pts[:,0])})
+    return data
+
+
 class ImagePoseDataset(torch.utils.data.Dataset):
     """
     A dataset that contains images and poses, and camera intrinsics.
@@ -17,11 +53,17 @@ class ImagePoseDataset(torch.utils.data.Dataset):
 
     def __init__(self, dataset_json_path: str):
         super().__init__()
-        required_columns = ["image_path", "T_pointcloud_camera",
-                            "camera_intrinsics", "camera_height", "camera_width", "camera_id"]
-        self.df = pd.read_json(dataset_json_path, orient="records")
-        for column in required_columns:
-            assert column in self.df.columns, f"column {column} is not in the dataset"
+        self.df = create_df()
+    #     for column in required_columns:
+    #         assert column in self.df.columns, f"column {column} is not in the dataset"
+    # # def __init__(self, dataset_json_path: str):
+    #     super().__init__()
+    #     required_columns = ["image_path", "T_pointcloud_camera",
+    #                         "camera_intrinsics", "camera_height", "camera_width", "camera_id"]
+    #     self.df = pd.read_json(dataset_json_path, orient="records")
+    #     for column in required_columns:
+    #         assert column in self.df.columns, f"column {column} is not in the dataset"
+    #
 
     def __len__(self):
         # return 1 # for debugging
@@ -46,7 +88,7 @@ class ImagePoseDataset(torch.utils.data.Dataset):
         base_camera_height = self.df.iloc[idx]["camera_height"]
         base_camera_width = self.df.iloc[idx]["camera_width"]
         camera_id = self.df.iloc[idx]["camera_id"]
-        image = PIL.Image.open(image_path)
+        image = PIL.Image.open(image_path).resize((1920//2,1080//2))
         image = torchvision.transforms.functional.to_tensor(image)
         # use real image size instead of camera_height and camera_width from colmap
         camera_height = image.shape[1]

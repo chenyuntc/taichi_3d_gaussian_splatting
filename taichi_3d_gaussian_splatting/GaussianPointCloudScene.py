@@ -146,7 +146,20 @@ class GaussianPointCloudScene(torch.nn.Module):
 
     @staticmethod
     def from_parquet(path: str, config=PointCloudSceneConfig()):
-        scene_df = pd.read_parquet(path)
+        def create_point_cloud():
+            import numpy as np
+            # pts1=np.load('/d/data/mlt/1684004313565050009/SENSOR_TYPE_HESAI_PANDAR128_E3X_0/data/00813.pkl',allow_pickle=True)
+            pts1=np.load('/d/data/mlt/1684004313565050009/SENSOR_TYPE_HESAI_PANDAR128_E3X_0/data/05303.pkl',allow_pickle=True)
+            # pts2=np.load('/d/data/mlt/1684004313565050009/SENSOR_TYPE_HESAI_PANDAR128_E3X_1/data/00813.pkl',allow_pickle=True)
+            pts2=np.load('/d/data/mlt/1684004313565050009/SENSOR_TYPE_HESAI_PANDAR128_E3X_1/data/05303.pkl',allow_pickle=True)
+            pts = np.concatenate([pts1,pts2],axis=0)
+            # create a dataframe, with x, y,z and r,g,b being zeros
+            data = pd.DataFrame({'x':pts[:,0],'y':pts[:,1],'z':pts[:,2],'r':np.zeros_like(pts[:,0]),'g':np.zeros_like(pts[:,0]),'b':np.zeros_like(pts[:,0])})
+            return data
+
+
+        # scene_df = pd.read_parquet(path)
+        scene_df = create_point_cloud()
         feature_columns = [f"cov_q{i}" for i in range(4)] + \
             [f"cov_s{i}" for i in range(3)] + \
             [f"alpha{i}" for i in range(1)] + \

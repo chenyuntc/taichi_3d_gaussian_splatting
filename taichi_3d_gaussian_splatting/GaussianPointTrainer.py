@@ -58,6 +58,7 @@ class GaussianPointCloudTrainer:
         loss_function_config: LossFunction.LossFunctionConfig = LossFunction.LossFunctionConfig()
 
     def __init__(self, config: TrainConfig):
+        import ipdb;ipdb.set_trace()
         self.config = config
         # create the log directory if it doesn't exist
         os.makedirs(self.config.summary_writer_log_dir, exist_ok=True)
