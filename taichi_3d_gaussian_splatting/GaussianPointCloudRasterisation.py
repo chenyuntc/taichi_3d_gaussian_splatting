@@ -956,7 +956,7 @@ class GaussianPointCloudRasterisation(torch.nn.Module):
                 
                 # Step 5: render
                 if point_in_camera_sort_key.shape[0] > 0:
-                    import ipdb;ipdb.set_trace()
+                    # import ipdb;ipdb.set_trace()
                     gaussian_point_rasterisation(
                         camera_height=camera_info.camera_height,
                         camera_width=camera_info.camera_width,
@@ -1062,7 +1062,7 @@ class GaussianPointCloudRasterisation(torch.nn.Module):
                         point_object_id=point_object_id,
                         q_camera_pointcloud=q_camera_pointcloud,
                         t_camera_pointcloud=t_camera_pointcloud,
-                        t_pointcloud_camera=t_pointcloud_camera,
+                        t_pointcloud_camera=t_pointcloud_camera.contiguous(),
                         pointcloud=pointcloud,
                         pointcloud_features=pointcloud_features,
                         tile_points_start=tile_points_start,
